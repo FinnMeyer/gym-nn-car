@@ -14,7 +14,6 @@ for t in range(max_steps):
     #action = env.action_space.sample()
     action = [0.57734869, 0.57, 0.3]
     observation, reward, done, info = env.step(action)
-    print(observation[0])
     observation_list.append(observation)
     
     total_reward += reward
@@ -22,14 +21,13 @@ for t in range(max_steps):
         for j in range(0,len(observation_list)):
 
             for i in range(0,7):
-                print("a")
-                print(observation_list[j][i])
                 scaled = (observation_list[j][i] * (scaling_max[i]-scaling_min[i])) + scaling_min[i]
                 results[i].append(scaled)
-                print(results)
         print("Episode finished after {:3} timesteps with total reward {:3.1f}".format(t+1, total_reward))
-
+        
+title = ["Torque", "Lat. acceleration", "Yaw rate", "Temp front left", "Temp rear left", "Velocity", "Acceleration"]
 for i in range(0,7):
     mp.subplot(2, 4, i+1)
     mp.plot(results[i])
+    mp.gca().set_title(title[i]) 
 mp.show()

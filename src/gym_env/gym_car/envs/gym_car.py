@@ -6,7 +6,7 @@ import tensorflow as tf
 import collections
 class gym_car(gym.Env):
     """
-    DummyEnv - The simplest possible implementation of an OpenAI gym environment
+    environment for a car
     """
     def __init__(self):
         self.episode_over = False
@@ -63,6 +63,8 @@ class gym_car(gym.Env):
         # Note, only first entry in the state vector is actually informative
         ob = self.prediction_result
         return ob, reward, False, {}
+
+        
 
     def reset(self):
         self.state = np.zeros(7)

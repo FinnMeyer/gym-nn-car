@@ -1,5 +1,4 @@
 import tensorflow as tf
-import tensorflow_datasets as tfds
 import utils.loading_util as lu
 import os
 import pandas as pd
@@ -9,8 +8,8 @@ import matplotlib.pyplot as mp
 tf.compat.v1.enable_eager_execution()
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-def load(file = "test/142_13.csv"):
-    file_path ="/home/finnm/Masterarbeit/pandas_data/" + file
+def load(file = "2_14.csv"):
+    file_path ="./data/" + file
     data = pd.read_csv(file_path , delimiter=",", index_col=0)
     data = data.reset_index(drop=True)
 
@@ -64,7 +63,7 @@ def predict(input, result, index_start, index_end, model_loc = '../Versuche_Lstm
             inputs = np.reshape(input.iloc[i][md.channels * (md.shift_range):].to_numpy(), [1,md.amount_of_inputs * (md.input_length)])
             #print(input.iloc[i].to_numpy())
             #print(tf.convert_to_tensor(a))
-            print(inputs)
+            print(model.summary())
             prediction_result = model([features[0], inputs[0]])[0].numpy()
 
             #print(input.iloc[i+1])

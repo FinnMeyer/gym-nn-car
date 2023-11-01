@@ -1,5 +1,4 @@
 import tensorflow as tf
-import tensorflow_datasets as tfds
 import utils.loading_util as lu
 import utils.predict_util as pu
 import os
@@ -16,14 +15,4 @@ print(c)
 print("bbb")
 print(end)
 c,d  = pu.scale(c,d )
-c = c.reset_index()
-d = d.reset_index()
-c1 = c.reset_index()
-d1 = d.reset_index()
-c1.columns=["a","b","c","d","e","f","g","h","i"]
-d1.columns=["a","b","c","d","e","f","g","h","i"]
-c1["a"] = c1["a"] * 4
-d1["a"] = d1["a"] * 4
-c1.to_csv("eight_1_142_13_213687.csv")
-d1.to_csv("eight_2.csv")
 pu.plot(c,d )

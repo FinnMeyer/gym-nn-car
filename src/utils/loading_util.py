@@ -23,7 +23,6 @@ def load_scaling():
 
     my_data1 = my_data1[~np.isnan(my_data1).any(axis=1)]
     min_value = my_data1.min(axis=0)
-    min_value[13] = -30.0
     scaling_max = tf.constant(my_data1.max(axis=0), dtype=tf.float32)   
     scaling_min = tf.constant(min_value, dtype=tf.float32)
     return scaling_min, scaling_max
