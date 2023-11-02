@@ -12,10 +12,12 @@ def load(file = "2_14.csv"):
     """
     this loads the braking events from a file in the data folder
     """
+    #load file
     file_path ="./data/" + file
     data = pd.read_csv(file_path , delimiter=",", index_col=0)
     data = data.reset_index(drop=True)
 
+    #here the formating has to be done; creating the sequences for the state,environmental variables and the inputs
     listaa = []
     cols = [col for col in data.columns if col not in ["LWI_Lenkradwinkel.Angle.°.","EM1_IstMoment.Torque.Nm.","ESP_Bremsdruck.Pressure.bar."]]
     aa = data[cols]
@@ -93,7 +95,7 @@ def predict(env, input, result, index_start, index_end):
 
 def scale(predictions,rev):
     """
-    rescaling the inputs
+    rescaling the results
     """
     scaling_min, scaling_max = lu.load_scaling()
 
@@ -106,7 +108,7 @@ def scale(predictions,rev):
     return predictions,rev
 def plot(predictions,rev):
     """
-    ploting the real and the reference data
+    ploting the prediction and the reference data
     """
 
     for i in range(0,len(predictions.columns)):

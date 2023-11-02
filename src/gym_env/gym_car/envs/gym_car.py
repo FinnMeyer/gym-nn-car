@@ -34,7 +34,9 @@ class gym_car(gym.Env):
         self.model = tf.keras.models.load_model("./model/checkpoint0.0001-size of net:2.0-1-25.0-6-2023_09_06_15_31_10")
         self.model.summary()
 
+    #one prediction step
     def step(self, action):
+        #if not run on real data the correct formating has to be done by the environment
         if self.on_data == False:
             if self.start != 0:
                 self.features_list = np.roll(self.features_list, 11)
@@ -44,8 +46,10 @@ class gym_car(gym.Env):
 
             self.action_list = np.roll(self.action_list, 3)
             np.put(self.features_list, [0,1,2], action)
+        # if run on data the formating is already done by the data loader
         else:
             self.action_list = action
+        #run the tensorflow model
         self.prediction_result = self.model([self.features_list,self.action_list])[0].numpy()
 
         # end episode after reaching goal state
@@ -69,9 +73,15 @@ class gym_car(gym.Env):
         self.on_data = on_data
 
     def set_features(self,features):
+        """
+        set the features if run on real data
+        """
         self.features_list = features
 
     def reset(self,):
+        """
+        reset environment
+        """
         self.state = np.zeros(7)
         self.state[0] = self.start
         return self.state
