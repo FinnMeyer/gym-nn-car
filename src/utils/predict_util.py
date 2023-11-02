@@ -9,6 +9,9 @@ tf.compat.v1.enable_eager_execution()
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 def load(file = "2_14.csv"):
+    """
+    this loads the braking events from a file in the data folder
+    """
     file_path ="./data/" + file
     data = pd.read_csv(file_path , delimiter=",", index_col=0)
     data = data.reset_index(drop=True)
@@ -38,21 +41,27 @@ def load(file = "2_14.csv"):
     result = data2.iloc[: , 4:md.channels]
     return input, result
 
-def predict(input, result, index_start, index_end, model_loc = '../Versuche_Lstm/checkpoint2'):
-    model = tf.keras.models.load_model(model_loc)
+def predict(env, input, result, index_start, index_end):
+    """
+    needs: gym, environment, the data from a file and the start and end index the prediction is allowed to go through
+    """
+    total_reward = 0
     series=False
     predict_list=[]
     start = index_start
     end = index_start
+    #start to go through file
     for i in range(index_start,index_end,md.down_sampling_factor):
+        #checks if a braking event has ended; only possible if series = True / we already had atleast one prediction
         if (result.iloc[i].isna().any() == True or result.iloc[i+1].isna().any() == True) and series== True:
             break
+        #starts the braking event if non nan row is found -> braking event has started
         elif input.iloc[i].isna().any() == True:
             start = start + md.down_sampling_factor
             end = end + md.down_sampling_factor
-
             continue 
         else:
+            #preprocess the data into the correct format
             if series == False:
                 features = np.reshape(input.iloc[i][:md.channels * (md.shift_range)].to_numpy(), [1,(md.shift_range)* md.channels])
             else:
@@ -62,22 +71,30 @@ def predict(input, result, index_start, index_end, model_loc = '../Versuche_Lstm
                 np.put(features, [pos + 4,pos + 5,pos + 6,pos + 7,pos + 8,pos + 9,pos + 10], prediction_result)
             inputs = np.reshape(input.iloc[i][md.channels * (md.shift_range):].to_numpy(), [1,md.amount_of_inputs * (md.input_length)])
 
-            prediction_result = model([features, inputs])[0].numpy()
 
+            #predict
+            env.set_features(features)   
+            prediction_result, reward, done, info = env.step(inputs)
+
+            total_reward += reward
+            #append data to dataframe for plotting
             df = pd.DataFrame([prediction_result.tolist()])
             df["Index"] = end
             predict_list.append(df)
-            
             series=True
             end = end + md.down_sampling_factor
 
+    #if braking event is over return al the relevant info
     predictions = pd.concat(predict_list, axis = 0)
     predictions = predictions.set_index('Index')
     rev = result.iloc[start:end,:]
     rev = rev[::md.down_sampling_factor]
-    return predictions, rev, end
+    return predictions, rev, end, total_reward
 
 def scale(predictions,rev):
+    """
+    rescaling the inputs
+    """
     scaling_min, scaling_max = lu.load_scaling()
 
     predictions = predictions.mul((scaling_max[7:] - scaling_min[7:]), axis=1)
@@ -88,6 +105,10 @@ def scale(predictions,rev):
 
     return predictions,rev
 def plot(predictions,rev):
+    """
+    ploting the real and the reference data
+    """
+
     for i in range(0,len(predictions.columns)):
         mp.subplot(2, 4, i+1)
         mp.plot(rev.iloc[:,i] , label='True')

@@ -8,7 +8,7 @@ class gym_car(gym.Env):
     """
     environment for a car
     """
-    def __init__(self):
+    def __init__(self, on_data = False):
         self.episode_over = False
         self.action_space = gym.spaces.Box( low=np.array([0,0,0]),
                                             high=np.array([1,1,1]),
@@ -21,6 +21,7 @@ class gym_car(gym.Env):
         self.enviroment = [0,0,0,0]
         self.start = 0
         self.end = 20
+        self.on_data = on_data
         self.prediction_result = []
         self.episode_over = False
 
@@ -34,29 +35,26 @@ class gym_car(gym.Env):
         self.model.summary()
 
     def step(self, action):
-        print("a")
-        if self.start != 0:
-            print("b")
-            print(self.features_list)
-            self.features_list = np.roll(self.features_list, 11)
-            pos = 55
-            np.put(self.features_list, [pos + 0,pos + 1,pos + 2,pos + 3], self.enviroment)
-            np.put(self.features_list, [pos + 4,pos + 5,pos + 6,pos + 7,pos + 8,pos + 9,pos + 10], self.prediction_result)
+        if self.on_data == False:
+            if self.start != 0:
+                self.features_list = np.roll(self.features_list, 11)
+                pos = 55
+                np.put(self.features_list, [pos + 0,pos + 1,pos + 2,pos + 3], self.enviroment)
+                np.put(self.features_list, [pos + 4,pos + 5,pos + 6,pos + 7,pos + 8,pos + 9,pos + 10], self.prediction_result)
 
-        self.action_list = np.roll(self.action_list, 3)
-        np.put(self.features_list, [0,1,2], action)
+            self.action_list = np.roll(self.action_list, 3)
+            np.put(self.features_list, [0,1,2], action)
+        else:
+            self.action_list = action
         self.prediction_result = self.model([self.features_list,self.action_list])[0].numpy()
-        print(self.prediction_result)
 
         # end episode after reaching goal state
         self.start = self.start + 1
         if self.start == self.end:
             self.episode_over = True
 
-        # get reward at
-        reward = self.reward_range[1] * int(self.state[0] == self.end)
-        # add some random negative reward noise to make it optimal to get to goal state fast
-        reward += self.reward_range[0] * np.random.random()
+        # get reward
+        reward =  np.random.random()
 
         # observation is state plus random noise
         # Note, only first entry in the state vector is actually informative
@@ -64,8 +62,16 @@ class gym_car(gym.Env):
         return ob, reward, False, {}
 
         
+    def set_data(self,on_data = False):
+        """
+        define if prediction should be on real data
+        """
+        self.on_data = on_data
 
-    def reset(self):
+    def set_features(self,features):
+        self.features_list = features
+
+    def reset(self,):
         self.state = np.zeros(7)
         self.state[0] = self.start
         return self.state
