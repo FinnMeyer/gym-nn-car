@@ -45,7 +45,6 @@ class gym_car(gym.Env):
 
         self.action_list = np.roll(self.action_list, 3)
         np.put(self.features_list, [0,1,2], action)
-
         self.prediction_result = self.model([self.features_list,self.action_list])[0].numpy()
         print(self.prediction_result)
 

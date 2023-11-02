@@ -61,25 +61,14 @@ def predict(input, result, index_start, index_end, model_loc = '../Versuche_Lstm
                 np.put(features, [pos + 0,pos + 1,pos + 2,pos + 3], input.iloc[i][:7].to_numpy())
                 np.put(features, [pos + 4,pos + 5,pos + 6,pos + 7,pos + 8,pos + 9,pos + 10], prediction_result)
             inputs = np.reshape(input.iloc[i][md.channels * (md.shift_range):].to_numpy(), [1,md.amount_of_inputs * (md.input_length)])
-            #print(input.iloc[i].to_numpy())
-            #print(tf.convert_to_tensor(a))
-            print(model.summary())
-            prediction_result = model([features[0], inputs[0]])[0].numpy()
 
-            #print(input.iloc[i+1])
-            # input.to_csv("input.csv")
-            # print([features, inputs])
+            prediction_result = model([features, inputs])[0].numpy()
+
             df = pd.DataFrame([prediction_result.tolist()])
             df["Index"] = end
             predict_list.append(df)
-            #print(input.iloc[i+1])
+            
             series=True
-            # if end - start == 2000:
-            #     print("end")
-            #     print(end)
-            #     print(result.iloc[i])
-            #     end = end + md.down_sampling_factor
-            #     break
             end = end + md.down_sampling_factor
 
     predictions = pd.concat(predict_list, axis = 0)
